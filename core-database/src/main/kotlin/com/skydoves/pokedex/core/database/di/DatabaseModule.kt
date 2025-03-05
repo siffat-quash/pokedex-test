@@ -21,6 +21,7 @@ import androidx.room.Room
 import com.skydoves.pokedex.core.database.PokedexDatabase
 import com.skydoves.pokedex.core.database.PokemonDao
 import com.skydoves.pokedex.core.database.PokemonInfoDao
+import com.skydoves.pokedex.core.database.PokemonTeamDao
 import com.skydoves.pokedex.core.database.TypeResponseConverter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
@@ -65,6 +66,12 @@ internal object DatabaseModule {
   @Singleton
   fun providePokemonInfoDao(appDatabase: PokedexDatabase): PokemonInfoDao {
     return appDatabase.pokemonInfoDao()
+  }
+
+  @Provides
+  @Singleton
+  fun providePokemonTeamDao(appDatabase: PokedexDatabase): PokemonTeamDao {
+    return appDatabase.pokemonTeamDao()
   }
 
   @Provides

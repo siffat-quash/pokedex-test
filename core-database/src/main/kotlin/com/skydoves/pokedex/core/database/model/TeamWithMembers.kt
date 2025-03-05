@@ -14,30 +14,23 @@
  * limitations under the License.
  */
 
-package com.skydoves.pokedex.core.database
+package com.skydoves.pokedex.core.database.model
 
-import androidx.room.Database
-import androidx.room.RoomDatabase
-import androidx.room.TypeConverters
-import com.skydoves.pokedex.core.database.entity.PokemonEntity
-import com.skydoves.pokedex.core.database.entity.PokemonInfoEntity
+import androidx.room.Embedded
+import androidx.room.Relation
 import com.skydoves.pokedex.core.database.entity.PokemonTeamEntity
 import com.skydoves.pokedex.core.database.entity.PokemonTeamMemberEntity
 
-@Database(
-  entities = [
-    PokemonEntity::class,
-    PokemonInfoEntity::class,
-    PokemonTeamEntity::class,
-    PokemonTeamMemberEntity::class
-  ],
-  version = 3, // Increased version number for new schema
-  exportSchema = true,
-)
-@TypeConverters(value = [TypeResponseConverter::class])
-abstract class PokedexDatabase : RoomDatabase() {
+/**
+ * A data class that represents a team with its members
+ * This is not an entity, but a helper class for Room's @Relation annotation
+ */
+data class TeamWithMembers(
+  @Embedded val team: PokemonTeamEntity,
 
-  abstract fun pokemonDao(): PokemonDao
-  abstract fun pokemonInfoDao(): PokemonInfoDao
-  abstract fun pokemonTeamDao(): PokemonTeamDao
-}
+  @Relation(
+    parentColumn = "id",
+    entityColumn = "teamId"
+  )
+  val members: List<PokemonTeamMemberEntity>
+)

@@ -18,20 +18,13 @@ package com.skydoves.pokedex.core.database.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.skydoves.pokedex.core.model.PokemonInfo
 
+/**
+ * Entity class for Pokemon teams
+ */
 @Entity
-data class PokemonInfoEntity(
-  @PrimaryKey val id: Int,
+data class PokemonTeamEntity(
+  @PrimaryKey(autoGenerate = true) val id: Long = 0,
   val name: String,
-  val height: Int,
-  val weight: Int,
-  val experience: Int,
-  val types: List<PokemonInfo.TypeResponse>,
-  val hp: Int,
-  val attack: Int,
-  val defense: Int,
-  val speed: Int,
-  val exp: Int,
-  val isFavorite: Boolean = false, // Added this field with a default value
+  val createdAt: Long = System.currentTimeMillis()
 )

@@ -21,6 +21,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.skydoves.pokedex.core.database.entity.PokemonEntity
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface PokemonDao {
@@ -33,4 +34,35 @@ interface PokemonDao {
 
   @Query("SELECT * FROM PokemonEntity WHERE page <= :page_")
   suspend fun getAllPokemonList(page_: Int): List<PokemonEntity>
+
+  /**
+   * Get a specific Pokemon by name
+   */
+  @Query("SELECT * FROM PokemonEntity WHERE name = :name")
+  suspend fun getPokemonByName(name: String): PokemonEntity?
+
+  /**
+   * Get Pokemon list as a Flow for reactive updates
+   */
+  @Query("SELECT * FROM PokemonEntity WHERE page <= :page_")
+  fun getAllPokemonListFlow(page_: Int): Flow<List<PokemonEntity>>
+
+  /**
+   * Search Pokemon by name pattern
+   */
+  @Query("SELECT * FROM PokemonEntity WHERE name LIKE '%' || :query || '%'")
+  suspend fun searchPokemon(query: String): List<PokemonEntity>
+
+  /**
+   * Get a list of Pokemon by their IDs
+   * This is useful for team functionality
+   */
+  @Query("SELECT * FROM PokemonEntity WHERE url LIKE '%/' || :id || '/'")
+  suspend fun getPokemonById(id: Int): PokemonEntity?
+
+  /**
+   * Get multiple Pokemon by their IDs
+   */
+  @Query("SELECT * FROM PokemonEntity WHERE url IN (:urls)")
+  suspend fun getPokemonByUrls(urls: List<String>): List<PokemonEntity>
 }

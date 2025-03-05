@@ -90,6 +90,7 @@ androidComponents {
 dependencies {
   // modules
   implementation(projects.coreData)
+  implementation(projects.coreDatabase)
 
   // modules for unit test
   testImplementation(projects.coreNetwork)
