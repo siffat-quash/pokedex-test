@@ -65,7 +65,7 @@ plugins {
 
 android {
   minSdk = 23
-  compileSdk = 34
+  compileSdk = 35
 }
 
 dependencyResolutionManagement {

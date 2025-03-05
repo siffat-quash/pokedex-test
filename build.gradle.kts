@@ -82,6 +82,7 @@ subprojects {
     kotlinOptions.freeCompilerArgs += listOf(
       "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
       "-opt-in=kotlin.time.ExperimentalTime",
+      "-Xskip-prerelease-check"
     )
   }
 
