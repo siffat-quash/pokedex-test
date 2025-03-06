@@ -22,6 +22,9 @@
     <item name="colorAccent">@color/colorAccent</item>
     <item name="colorControlHighlight">@color/colorPrimary</item>
     <item name="android:textColorPrimary">@android:color/white</item>
+    <item name="popupMenuStyle">@style/PopupMenuStyle</item>
+    <item name="actionOverflowMenuStyle">@style/OverflowMenuStyle</item>
+    <item name="android:itemTextAppearance">@style/MenuTextStyle</item>
   </style>
 
   <style name="TextStyle" parent="@android:style/Widget.TextView">
@@ -44,4 +47,21 @@
     <item name="cornerSizeBottomRight">20%</item>
   </style>
 
+  <style name="RoundedImageView" parent="">
+    <item name="cornerSize">16dp</item>
+  </style>
+
+  <style name="PopupMenuStyle" parent="Widget.MaterialComponents.PopupMenu">
+    <item name="android:popupBackground">@android:color/white</item>
+  </style>
+
+  <style name="OverflowMenuStyle" parent="Widget.MaterialComponents.PopupMenu.Overflow">
+    <item name="android:popupBackground">@android:color/white</item>
+  </style>
+
+  <style name="MenuTextStyle" parent="TextAppearance.AppCompat.Menu">
+    <item name="android:textColor">@android:color/black</item>
+  </style>
+
+  <color name="light_gray">#EEEEEE</color>
 </resources>

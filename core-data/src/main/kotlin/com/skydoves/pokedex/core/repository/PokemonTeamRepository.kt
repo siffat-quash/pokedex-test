@@ -16,8 +16,12 @@
 
 package com.skydoves.pokedex.core.data.repository
 
+import android.util.Log
+import com.skydoves.pokedex.core.database.PokemonDao
 import com.skydoves.pokedex.core.database.PokemonInfoDao
 import com.skydoves.pokedex.core.database.PokemonTeamDao
+import com.skydoves.pokedex.core.database.entity.PokemonEntity
+import com.skydoves.pokedex.core.database.entity.PokemonInfoEntity
 import com.skydoves.pokedex.core.database.entity.PokemonTeamEntity
 import com.skydoves.pokedex.core.database.entity.PokemonTeamMemberEntity
 import com.skydoves.pokedex.core.database.model.TeamWithMembers
@@ -27,13 +31,16 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * Single source of truth for Pokemon team operations
  */
+@Singleton
 class PokemonTeamRepository @Inject constructor(
-  private val pokemonTeamDao: PokemonTeamDao,
-  private val pokemonInfoDao: PokemonInfoDao
+  private val pokemonDao: PokemonDao,
+  private val pokemonInfoDao: PokemonInfoDao,
+  private val pokemonTeamDao: PokemonTeamDao
 ) {
 
   /**
@@ -133,6 +140,47 @@ class PokemonTeamRepository @Inject constructor(
    */
   suspend fun toggleFavorite(pokemonId: Int, isFavorite: Boolean) {
     pokemonInfoDao.updateFavoriteStatus(pokemonId, isFavorite)
+  }
+
+  /**
+   * Saves a Pokemon to the local database to ensure persistence.
+   * This will save both basic Pokemon data and detailed info.
+   *
+   * @param pokemon The PokemonInfo model containing the Pokemon data
+   * @return Boolean indicating whether the save was successful
+   */
+  suspend fun savePokemon(pokemon: PokemonInfo): Boolean {
+    try {
+      // First save the basic Pokemon data
+      val basicPokemon = PokemonEntity(
+        page = 0, // Default page value
+        name = pokemon.name,
+        url = "https://pokeapi.co/api/v2/pokemon/${pokemon.id}/" // Constructing a URL based on ID
+      )
+      pokemonDao.insertPokemonList(listOf(basicPokemon))
+
+      // Then save the detailed Pokemon info
+      val pokemonInfo = PokemonInfoEntity(
+        id = pokemon.id,
+        name = pokemon.name,
+        height = pokemon.height,
+        weight = pokemon.weight,
+        experience = pokemon.experience,
+        hp = pokemon.hp,
+        attack = pokemon.attack,
+        defense = pokemon.defense,
+        speed = pokemon.speed,
+        exp = pokemon.exp,
+        isFavorite = pokemon.isFavorite,
+        types = pokemon.types
+      )
+      pokemonInfoDao.insertPokemonInfo(pokemonInfo)
+
+      return true
+    } catch (e: Exception) {
+      Log.e("PokemonTeamRepository", "Error saving Pokemon: ${e.message}", e)
+      return false
+    }
   }
 
   /**

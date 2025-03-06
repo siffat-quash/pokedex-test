@@ -16,12 +16,16 @@
 
 package com.skydoves.pokedex.ui.main
 
+import android.content.Intent
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import androidx.activity.viewModels
 import androidx.annotation.VisibleForTesting
 import com.skydoves.bindables.BindingActivity
 import com.skydoves.pokedex.R
 import com.skydoves.pokedex.databinding.ActivityMainBinding
+import com.skydoves.pokedex.ui.team.TeamListActivity
 import com.skydoves.transformationlayout.onTransformationStartContainer
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -37,6 +41,26 @@ class MainActivity : BindingActivity<ActivityMainBinding>(R.layout.activity_main
     binding {
       adapter = PokemonAdapter()
       vm = viewModel
+
+      // Handle FAB click to navigate to team management
+      fabTeams.setOnClickListener {
+        startActivity(Intent(this@MainActivity, TeamListActivity::class.java))
+      }
+    }
+  }
+
+  override fun onCreateOptionsMenu(menu: Menu): Boolean {
+    menuInflater.inflate(R.menu.menu_main, menu)
+    return true
+  }
+
+  override fun onOptionsItemSelected(item: MenuItem): Boolean {
+    return when (item.itemId) {
+      R.id.action_teams -> {
+        startActivity(Intent(this, TeamListActivity::class.java))
+        true
+      }
+      else -> super.onOptionsItemSelected(item)
     }
   }
 }

@@ -43,6 +43,16 @@
       android:name=".ui.details.DetailActivity"
       android:launchMode="singleTop" />
 
+    <activity
+      android:name=".ui.team.TeamListActivity"
+      android:exported="true"
+      android:label="@string/my_teams"
+      android:parentActivityName=".ui.main.MainActivity" />
+
+    <activity
+      android:name=".ui.team.TeamDetailActivity"
+      android:exported="false"/>
+
     <provider
       android:name="androidx.startup.InitializationProvider"
       android:authorities="com.skydoves.pokedex.androidx-startup"

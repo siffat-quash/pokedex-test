@@ -16,9 +16,11 @@
 
 package com.skydoves.pokedex.ui.team
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.skydoves.pokedex.core.data.repository.PokemonTeamRepository
+import com.skydoves.pokedex.core.database.entity.PokemonTeamEntity
 import com.skydoves.pokedex.core.model.PokemonInfo
 import com.skydoves.pokedex.core.model.PokemonTeam
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -35,7 +37,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class TeamManagementViewModel @Inject constructor(
-  private val teamRepository: PokemonTeamRepository
+  val teamRepository: PokemonTeamRepository
 ) : ViewModel() {
 
   // Currently selected team ID
@@ -46,11 +48,8 @@ class TeamManagementViewModel @Inject constructor(
   val selectedTeamName: StateFlow<String?> = _selectedTeamName
 
   // Pokemon in the selected team
-  val teamMembers: StateFlow<List<PokemonInfo>> = _selectedTeamId
-    .flatMapLatest { teamId ->
-      if (teamId != null) teamRepository.getTeamPokemon(teamId) else flowOf(emptyList())
-    }
-    .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+  private val _teamMembers = MutableStateFlow<List<PokemonInfo>>(emptyList())
+  val teamMembers: StateFlow<List<PokemonInfo>> = _teamMembers
 
   // Suggested Pokemon to add to the team
   private val _suggestedPokemon = MutableStateFlow<List<PokemonInfo>>(emptyList())
@@ -84,6 +83,19 @@ class TeamManagementViewModel @Inject constructor(
           }
         } else {
           _selectedTeamName.value = null
+        }
+      }
+    }
+
+    // Observe team members when team ID changes
+    viewModelScope.launch {
+      _selectedTeamId.collectLatest { teamId ->
+        if (teamId != null) {
+          teamRepository.getTeamPokemon(teamId).collectLatest { pokemonList ->
+            _teamMembers.value = pokemonList
+          }
+        } else {
+          _teamMembers.value = emptyList()
         }
       }
     }
@@ -143,6 +155,40 @@ class TeamManagementViewModel @Inject constructor(
     viewModelScope.launch {
       teamRepository.addPokemonToTeam(teamId, pokemonId)
     }
+  }
+
+  /**
+   * Add a Pokemon object directly to the selected team (for test data)
+   */
+  fun addPokemonToTeamDirectly(pokemon: PokemonInfo) {
+    Log.d("ViewModel", "Adding Pokemon directly: ${pokemon.name}")
+
+    val teamId = _selectedTeamId.value ?: return
+
+    // Add to in-memory list for immediate UI update
+    val currentMembers = _teamMembers.value.toMutableList()
+    currentMembers.add(pokemon)
+    _teamMembers.value = currentMembers
+
+    // Save to repository for persistence
+    viewModelScope.launch {
+      try {
+        // First save the Pokemon to ensure it exists in the DB
+        val success = teamRepository.savePokemon(pokemon)
+
+        if (success) {
+          // Then add the relationship between team and Pokemon
+          teamRepository.addPokemonToTeam(teamId, pokemon.id)
+          Log.d("ViewModel", "Pokemon saved to repository and added to team")
+        } else {
+          Log.e("ViewModel", "Failed to save Pokemon to repository")
+        }
+      } catch (e: Exception) {
+        Log.e("ViewModel", "Error adding Pokemon to team: ${e.message}")
+      }
+    }
+
+    Log.d("ViewModel", "Team now has ${currentMembers.size} members")
   }
 
   /**
@@ -227,5 +273,20 @@ class TeamManagementViewModel @Inject constructor(
   fun showAddPokemonDialog() {
     // In a real app, this would trigger a dialog or navigation
     // For now, we'll just make a placeholder
+  }
+
+  fun getAllTeams(): Flow<List<PokemonTeamEntity>> {
+    return teamRepository.getAllTeams()
+  }
+
+  /**
+   * Create a new team with a custom name and navigate to it
+   */
+  fun createTeamWithName(teamName: String, onComplete: (Long) -> Unit = {}) {
+    viewModelScope.launch {
+      val teamId = teamRepository.createTeam(teamName)
+      _selectedTeamId.value = teamId
+      onComplete(teamId)
+    }
   }
 }
